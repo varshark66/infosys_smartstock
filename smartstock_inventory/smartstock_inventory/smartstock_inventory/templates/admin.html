@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - SmartStock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1a202c;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c53030;
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .users-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 1.5rem;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .users-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .users-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-badge.admin {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .role-badge.user {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
+        }
+
+        .error {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .navbar {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">📦</div>
+            <span>SmartStock</span>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <span id="username">Admin</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Owner Dashboard</h1>
+            <p class="dashboard-subtitle">Manage users and monitor system activity</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👑</div>
+                <div class="stat-value" id="adminUsers">0</div>
+                <div class="stat-label">Admin Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div class="stat-value" id="employeeUsers">0</div>
+                <div class="stat-label">Employee Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="todayLogins">0</div>
+                <div class="stat-label">Today's Logins</div>
+            </div>
+        </div>
+
+        <!-- Users Section -->
+        <div class="users-section">
+            <h2 class="section-title">Registered Users</h2>
+            <div id="loadingMessage" class="loading">Loading users...</div>
+            <div id="errorMessage" class="error" style="display: none;"></div>
+            <table class="users-table" id="usersTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+    // Check authentication on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+
+        if (!token || role !== 'admin') {
+            alert('Access denied. Owner privileges required.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Update user info in navbar
+        document.getElementById('username').textContent = username;
+        document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+
+        // Load dashboard data
+        loadUsers();
+    });
+
+    // Load users from API
+    async function loadUsers() {
+        const token = localStorage.getItem('token');
+        
+        try {
+            const response = await fetch('http://127.0.0.1:5000/admin/users', {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                displayUsers(data.users);
+                updateStatistics(data.users);
+            } else {
+                showError('Failed to load users: ' + (data.message || 'Unauthorized'));
+                if (response.status === 401) {
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                }
+            }
+        } catch (error) {
+            showError('Network error. Please check your connection.');
+            console.error('Error loading users:', error);
+        }
+    }
+
+    // Display users in table
+    function displayUsers(users) {
+        const tableBody = document.getElementById('usersTableBody');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const usersTable = document.getElementById('usersTable');
+
+        // Clear existing content
+        tableBody.innerHTML = '';
+
+        // Add users to table
+        users.forEach(user => {
+            const row = tableBody.insertRow();
+            row.innerHTML = `
+                <td>${user.username}</td>
+                <td><span class="role-badge ${user.role}">${user.role}</span></td>
+                <td><span style="color: #22543d;">● Active</span></td>
+                <td>
+                    <button onclick="viewUser('${user.username}')" style="padding: 4px 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">View</button>
+                </td>
+            `;
+        });
+
+        // Hide loading, show table
+        loadingMessage.style.display = 'none';
+        usersTable.style.display = 'table';
+    }
+
+    // Update statistics
+    function updateStatistics(users) {
+        const totalUsers = users.length;
+        const adminUsers = users.filter(u => u.role === 'admin').length;
+        const employeeUsers = users.filter(u => u.role === 'user').length;
+
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('adminUsers').textContent = adminUsers;
+        document.getElementById('employeeUsers').textContent = employeeUsers;
+        document.getElementById('todayLogins').textContent = Math.floor(Math.random() * 20) + 5; // Demo data
+    }
+
+    // Show error message
+    function showError(message) {
+        const errorElement = document.getElementById('errorMessage');
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+        document.getElementById('loadingMessage').style.display = 'none';
+    }
+
+    // View user details (placeholder function)
+    function viewUser(username) {
+        alert(`Viewing details for user: ${username}\n\nThis would open a user details modal or page.`);
+    }
+
+    // Logout function
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('username');
+        window.location.href = 'login.html';
+    }
+</script>
+
+</body>
+</html>
