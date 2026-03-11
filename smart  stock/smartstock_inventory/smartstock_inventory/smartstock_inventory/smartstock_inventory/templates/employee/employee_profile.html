@@ -1,0 +1,342 @@
+{% extends "employee/base.html" %}
+
+{% block title %}Employee Profile - Smart Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <h1>Employee Profile</h1>
+        <p>Manage your personal information and account settings</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="avatar-container">
+                            <img src="https://picsum.photos/seed/employee/150/150.jpg" alt="Profile" class="rounded-circle" width="150" height="150">
+                            <button class="btn btn-sm btn-primary position-absolute bottom-0 end-0" onclick="changeAvatar()">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h4>John Employee</h4>
+                    <p class="text-muted">Sales Associate</p>
+                    <div class="badge bg-success mb-3">Active</div>
+                    
+                    <div class="text-start">
+                        <h6 class="text-muted">Contact Information</h6>
+                        <p class="mb-2"><i class="fas fa-envelope me-2"></i> john.employee@company.com</p>
+                        <p class="mb-2"><i class="fas fa-phone me-2"></i> +1 (555) 123-4567</p>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> New York, NY</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-start">
+                        <h6 class="text-muted">Employment Details</h6>
+                        <p class="mb-2"><i class="fas fa-building me-2"></i> Smart Inventory Inc.</p>
+                        <p class="mb-2"><i class="fas fa-calendar me-2"></i> Joined: January 15, 2023</p>
+                        <p class="mb-2"><i class="fas fa-id-badge me-2"></i> Employee ID: EMP001</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <!-- Personal Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm" onsubmit="updateProfile(event)">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" value="John" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" value="Employee" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" value="john.employee@company.com" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" value="+1 (555) 123-4567" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" rows="2">123 Main Street, New York, NY 10001</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label">Department</label>
+                                <select class="form-select" id="department">
+                                    <option value="sales" selected>Sales</option>
+                                    <option value="inventory">Inventory</option>
+                                    <option value="management">Management</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <select class="form-select" id="role">
+                                    <option value="sales-associate" selected>Sales Associate</option>
+                                    <option value="inventory-clerk">Inventory Clerk</option>
+                                    <option value="supervisor">Supervisor</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetProfileForm()">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Password Change -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Change Password</h5>
+                </div>
+                <div class="card-body">
+                    <form id="passwordForm" onsubmit="changePassword(event)">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" required minlength="8">
+                                <div class="form-text">Password must be at least 8 characters long</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" required minlength="8">
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key"></i> Change Password
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetPasswordForm()">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Sale Completed</h6>
+                                <p class="text-muted mb-1">Sold 1 Laptop for ₹999.99</p>
+                                <small class="text-muted">2 hours ago</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Stock Updated</h6>
+                                <p class="text-muted mb-1">Added 25 Mouse units to inventory</p>
+                                <small class="text-muted">4 hours ago</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Profile Updated</h6>
+                                <p class="text-muted mb-1">Changed phone number</p>
+                                <small class="text-muted">1 day ago</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Alert Resolved</h6>
+                                <p class="text-muted mb-1">Resolved low stock alert for Keyboard</p>
+                                <small class="text-muted">2 days ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+<div class="alert alert-success position-fixed top-0 end-0 m-3" id="successMessage" style="display: none; z-index: 1050;">
+    Profile updated successfully!
+</div>
+
+<div class="alert alert-danger position-fixed top-0 end-0 m-3" id="errorMessage" style="display: none; z-index: 1050;">
+    Error updating profile. Please try again.
+</div>
+
+<style>
+.avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -23px;
+    top: 5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+</style>
+
+<script>
+function updateProfile(event) {
+    event.preventDefault();
+    
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    
+    if (!firstName || !lastName || !email || !phone) {
+        showError('Please fill in all required fields');
+        return;
+    }
+    
+    showSuccess('Profile updated successfully!');
+    
+    setTimeout(() => {
+        hideMessages();
+    }, 3000);
+}
+
+function changePassword(event) {
+    event.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showError('Please fill in all password fields');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showError('New passwords do not match');
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        showError('Password must be at least 8 characters long');
+        return;
+    }
+    
+    showSuccess('Password changed successfully!');
+    resetPasswordForm();
+    
+    setTimeout(() => {
+        hideMessages();
+    }, 3000);
+}
+
+function resetProfileForm() {
+    document.getElementById('profileForm').reset();
+    hideMessages();
+}
+
+function resetPasswordForm() {
+    document.getElementById('passwordForm').reset();
+    hideMessages();
+}
+
+function changeAvatar() {
+    alert('Avatar upload functionality would open file picker');
+}
+
+function showSuccess(message) {
+    const successMessage = document.getElementById('successMessage');
+    successMessage.textContent = message;
+    successMessage.style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+    
+    setTimeout(() => {
+        successMessage.style.display = 'none';
+    }, 3000);
+}
+
+function showError(message) {
+    const errorMessage = document.getElementById('errorMessage');
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    document.getElementById('successMessage').style.display = 'none';
+    
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 3000);
+}
+
+function hideMessages() {
+    document.getElementById('successMessage').style.display = 'none';
+    document.getElementById('errorMessage').style.display = 'none';
+}
+</script>
+{% endblock %}

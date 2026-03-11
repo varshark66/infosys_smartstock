@@ -1,0 +1,781 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Smart Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    <div class="page-header">
+        <h1>Reports & Analytics</h1>
+        <p>Generate and analyze business reports</p>
+    </div>
+
+    <!-- Report Generation -->
+    <div class="report-generator">
+        <div class="generator-header">
+            <h3>Generate Report</h3>
+        </div>
+        
+        <form id="reportForm" class="report-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reportType">Report Type</label>
+                    <select class="form-select" id="reportType" required>
+                        <option value="">Select Report Type</option>
+                        <option value="sales">Sales Report</option>
+                        <option value="inventory">Inventory Report</option>
+                        <option value="products">Products Report</option>
+                        <option value="financial">Financial Summary</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" class="form-control" id="endDate" required>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="resetReportForm()">Clear</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-chart-bar"></i> Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Quick Reports -->
+    <div class="quick-reports">
+        <h3>Quick Reports</h3>
+        <div class="quick-report-buttons">
+            <button class="quick-report-btn" onclick="generateQuickReport('today')">
+                <i class="fas fa-calendar-day"></i>
+                <span>Today's Sales</span>
+            </button>
+            <button class="quick-report-btn" onclick="generateQuickReport('week')">
+                <i class="fas fa-calendar-week"></i>
+                <span>This Week</span>
+            </button>
+            <button class="quick-report-btn" onclick="generateQuickReport('month')">
+                <i class="fas fa-calendar-alt"></i>
+                <span>This Month</span>
+            </button>
+            <button class="quick-report-btn" onclick="generateQuickReport('lowstock')">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Low Stock</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Report Display -->
+    <div class="report-display" id="reportDisplay" style="display: none;">
+        <div class="report-header">
+            <h3 id="reportTitle">Report Title</h3>
+            <div class="report-actions">
+                <button class="btn btn-sm btn-outline-success" onclick="exportReport('csv')">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="exportReport('pdf')">
+                    <i class="fas fa-file-pdf"></i> Export PDF
+                </button>
+                <button class="btn btn-sm btn-outline-primary" onclick="printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+        
+        <div class="report-summary" id="reportSummary">
+            <!-- Summary cards will be displayed here -->
+        </div>
+        
+        <div class="report-content">
+            <div class="report-charts" id="reportCharts">
+                <!-- Charts will be displayed here -->
+            </div>
+            
+            <div class="report-table" id="reportTable">
+                <!-- Table data will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="recent-reports">
+        <h3>Recent Reports</h3>
+        <div class="reports-list" id="reportsList">
+            <!-- Recent reports will be displayed here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentReport = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default dates
+    const today = new Date();
+    const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    document.getElementById('startDate').value = lastWeek.toISOString().split('T')[0];
+    
+    loadRecentReports();
+});
+
+// Generate report
+document.getElementById('reportForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const reportType = document.getElementById('reportType').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    await generateReport(reportType, startDate, endDate);
+});
+
+// Generate report
+async function generateReport(reportType, startDate, endDate) {
+    try {
+        const response = await fetch('/api/reports/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                report_type: reportType,
+                start_date: startDate,
+                end_date: endDate
+            })
+        });
+        
+        if (response.ok) {
+            const report = await response.json();
+            currentReport = report.report;
+            displayReport(currentReport);
+            showAlert('Report generated successfully', 'success');
+        } else {
+            // For demo, generate sample report
+            generateSampleReport(reportType, startDate, endDate);
+        }
+    } catch (error) {
+        console.error('Error generating report:', error);
+        generateSampleReport(reportType, startDate, endDate);
+    }
+}
+
+// Generate sample report for demo
+function generateSampleReport(reportType, startDate, endDate) {
+    const sampleReports = {
+        sales: {
+            type: 'sales',
+            title: 'Sales Report',
+            summary: {
+                total_sales: 15420.50,
+                total_transactions: 89,
+                avg_transaction: 173.37,
+                top_product: 'Product A'
+            },
+            data: generateSampleSalesData()
+        },
+        inventory: {
+            type: 'inventory',
+            title: 'Inventory Report',
+            summary: {
+                total_products: 45,
+                low_stock_items: 8,
+                total_value: 25680.00,
+                warehouse_capacity: '78%'
+            },
+            data: generateSampleInventoryData()
+        }
+    };
+    
+    currentReport = sampleReports[reportType] || sampleReports.sales;
+    currentReport.start_date = startDate;
+    currentReport.end_date = endDate;
+    displayReport(currentReport);
+    showAlert('Report generated successfully', 'success');
+}
+
+// Generate sample sales data
+function generateSampleSalesData() {
+    const products = ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'];
+    return products.map(product => ({
+        product_name: product,
+        quantity: Math.floor(Math.random() * 50) + 10,
+        revenue: Math.floor(Math.random() * 2000) + 500
+    }));
+}
+
+// Generate sample inventory data
+function generateSampleInventoryData() {
+    const products = ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'];
+    return products.map(product => ({
+        name: product,
+        stock_quantity: Math.floor(Math.random() * 100),
+        min_stock_level: 10,
+        unit_price: Math.floor(Math.random() * 100) + 20,
+        total_value: 0
+    })).map(item => ({
+        ...item,
+        total_value: item.stock_quantity * item.unit_price
+    }));
+}
+
+// Display report
+function displayReport(report) {
+    const display = document.getElementById('reportDisplay');
+    const title = document.getElementById('reportTitle');
+    const summary = document.getElementById('reportSummary');
+    const charts = document.getElementById('reportCharts');
+    const table = document.getElementById('reportTable');
+    
+    display.style.display = 'block';
+    title.textContent = `${report.title} (${report.start_date} to ${report.end_date})`;
+    
+    // Display summary
+    summary.innerHTML = Object.entries(report.summary).map(([key, value]) => {
+        const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return `
+            <div class="summary-card">
+                <h4>${formatValue(value, key)}</h4>
+                <p>${label}</p>
+            </div>
+        `;
+    }).join('');
+    
+    // Display charts
+    charts.innerHTML = `
+        <div class="chart-container">
+            <canvas id="reportChart"></canvas>
+        </div>
+    `;
+    
+    // Display table
+    table.innerHTML = `
+        <h4>Detailed Data</h4>
+        <div class="table-responsive">
+            <table class="report-table-data">
+                <thead>
+                    <tr>
+                        ${Object.keys(report.data[0] || {}).map(key => 
+                            `<th>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</th>`
+                        ).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${report.data.map(row => 
+                        `<tr>
+                            ${Object.values(row).map(value => 
+                                `<td>${formatValue(value)}</td>`
+                            ).join('')}
+                        </tr>`
+                    ).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    // Create chart
+    setTimeout(() => createReportChart(report), 100);
+}
+
+// Create report chart
+function createReportChart(report) {
+    const ctx = document.getElementById('reportChart');
+    if (!ctx) return;
+    
+    const chartData = report.data.map(item => ({
+        label: item.product_name || item.name,
+        value: item.revenue || item.total_value || item.quantity
+    }));
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.map(d => d.label),
+            datasets: [{
+                label: report.type === 'sales' ? 'Revenue' : 'Value',
+                data: chartData.map(d => d.value),
+                backgroundColor: '#4A90E2'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Generate quick report
+function generateQuickReport(type) {
+    const today = new Date();
+    let startDate, endDate, reportType;
+    
+    switch(type) {
+        case 'today':
+            startDate = endDate = today.toISOString().split('T')[0];
+            reportType = 'sales';
+            break;
+        case 'week':
+            endDate = today.toISOString().split('T')[0];
+            startDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            reportType = 'sales';
+            break;
+        case 'month':
+            endDate = today.toISOString().split('T')[0];
+            startDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            reportType = 'sales';
+            break;
+        case 'lowstock':
+            startDate = endDate = today.toISOString().split('T')[0];
+            reportType = 'inventory';
+            break;
+    }
+    
+    document.getElementById('reportType').value = reportType;
+    document.getElementById('startDate').value = startDate;
+    document.getElementById('endDate').value = endDate;
+    
+    generateReport(reportType, startDate, endDate);
+}
+
+// Export report
+function exportReport(format) {
+    if (!currentReport) {
+        showAlert('No report to export', 'warning');
+        return;
+    }
+    
+    if (format === 'csv') {
+        exportToCSV();
+    } else if (format === 'pdf') {
+        showAlert('PDF export would be implemented here', 'info');
+    }
+}
+
+// Export to CSV
+function exportToCSV() {
+    let csv = '\ufeff'; // BOM for UTF-8
+    
+    // Add headers
+    const headers = Object.keys(currentReport.data[0] || {});
+    csv += headers.join(',') + '\n';
+    
+    // Add data
+    currentReport.data.forEach(row => {
+        const values = headers.map(header => {
+            const value = row[header];
+            return typeof value === 'string' ? `"${value}"` : value;
+        });
+        csv += values.join(',') + '\n';
+    });
+    
+    // Download file
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${currentReport.type}_report_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    showAlert('Report exported successfully', 'success');
+}
+
+// Print report
+function printReport() {
+    if (!currentReport) {
+        showAlert('No report to print', 'warning');
+        return;
+    }
+    
+    window.print();
+}
+
+// Reset form
+function resetReportForm() {
+    document.getElementById('reportForm').reset();
+    
+    // Reset default dates
+    const today = new Date();
+    const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    document.getElementById('startDate').value = lastWeek.toISOString().split('T')[0];
+}
+
+// Load recent reports
+function loadRecentReports() {
+    // For demo, show sample recent reports
+    const recentReports = [
+        {
+            type: 'sales',
+            title: 'Sales Report',
+            date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+            status: 'completed'
+        },
+        {
+            type: 'inventory',
+            title: 'Inventory Report',
+            date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+            status: 'completed'
+        }
+    ];
+    
+    const reportsList = document.getElementById('reportsList');
+    reportsList.innerHTML = recentReports.map(report => `
+        <div class="report-item">
+            <div class="report-info">
+                <h4>${report.title}</h4>
+                <p>Generated on ${report.date}</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn btn-sm btn-outline-primary" onclick="viewReport('${report.type}')">
+                    <i class="fas fa-eye"></i> View
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// View report
+function viewReport(reportType) {
+    document.getElementById('reportType').value = reportType;
+    generateQuickReport(reportType === 'sales' ? 'week' : 'lowstock');
+}
+
+// Format value for display
+function formatValue(value, key) {
+    if (typeof value === 'number') {
+        if (key.includes('revenue') || key.includes('value') || key.includes('total')) {
+            return formatCurrency(value);
+        }
+        return value.toLocaleString();
+    }
+    return value;
+}
+
+// Format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR'
+    }).format(amount);
+}
+
+// Show alert
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.reports-container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+</script>
+
+<style>
+.reports-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.report-generator {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.generator-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.generator-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.report-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.quick-reports {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.quick-reports h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.quick-report-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.quick-report-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.quick-report-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.quick-report-btn i {
+    font-size: 1.2rem;
+}
+
+.report-display {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.report-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.report-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.summary-card h4 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.summary-card p {
+    color: #666;
+    margin: 0;
+}
+
+.report-content {
+    margin-top: 2rem;
+}
+
+.chart-container {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.report-table h4 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.report-table-data {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.report-table-data th {
+    background: #f8f9fa;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.report-table-data td {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.report-table-data tr:hover {
+    background-color: #f8f9fa;
+}
+
+.recent-reports {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.recent-reports h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.reports-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.report-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.report-item:hover {
+    background-color: #f8f9fa;
+}
+
+.report-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: #333;
+}
+
+.report-info p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .report-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-report-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .report-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .report-actions {
+        flex-wrap: wrap;
+    }
+    
+    .report-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .report-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+@media print {
+    .top-header,
+    .sidebar,
+    .report-actions,
+    .quick-reports,
+    .recent-reports,
+    .form-actions {
+        display: none !important;
+    }
+    
+    .page-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .report-display {
+        box-shadow: none !important;
+        border: none !important;
+    }
+}
+</style>
+{% endblock %}

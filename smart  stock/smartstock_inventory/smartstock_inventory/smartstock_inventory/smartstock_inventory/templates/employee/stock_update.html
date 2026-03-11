@@ -1,0 +1,201 @@
+{% extends "employee/base.html" %}
+
+{% block title %}Stock Update - Smart Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <h1>Stock Update</h1>
+        <p>Update product inventory</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form id="stockUpdateForm" onsubmit="handleStockUpdate(event)">
+                        <div class="mb-3">
+                            <label for="productSelect" class="form-label">Select Product</label>
+                            <select class="form-select" id="productSelect" name="product" required onchange="updateStockInfo()">
+                                <option value="">Choose a product...</option>
+                                <option value="laptop">Laptop - Current Stock: 5</option>
+                                <option value="mouse">Mouse - Current Stock: 50</option>
+                                <option value="keyboard">Keyboard - Current Stock: 25</option>
+                                <option value="monitor">Monitor - Current Stock: 0</option>
+                                <option value="desk-chair">Desk Chair - Current Stock: 15</option>
+                            </select>
+                        </div>
+                        
+                        <div class="alert alert-info" id="stockInfo" style="display: none;">
+                            <h6>Current Stock Information</h6>
+                            <p class="mb-1"><strong>Product:</strong> <span id="selectedProduct">-</span></p>
+                            <p class="mb-1"><strong>Current Stock:</strong> <span id="currentStock">-</span></p>
+                            <p class="mb-0"><strong>Price:</strong> <span id="productPrice">-</span></p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Operation Type</label>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="operation" id="stockIn" value="stock-in" checked>
+                                <label class="btn btn-outline-success" for="stockIn">
+                                    <i class="fas fa-plus"></i> Stock In
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="operation" id="stockOut" value="stock-out">
+                                <label class="btn btn-outline-warning" for="stockOut">
+                                    <i class="fas fa-minus"></i> Stock Out
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" min="1" required placeholder="Enter quantity">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Enter reason for stock update (optional)"></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Stock
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Updates</h5>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Mouse Stock Updated</h6>
+                                    <small class="text-muted">Stock In: 50 units</small>
+                                </div>
+                                <small class="text-muted">2 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Keyboard Stock Updated</h6>
+                                    <small class="text-muted">Stock Out: 5 units</small>
+                                </div>
+                                <small class="text-muted">4 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Laptop Stock Updated</h6>
+                                    <small class="text-muted">Stock In: 10 units</small>
+                                </div>
+                                <small class="text-muted">1 day ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-success position-fixed top-0 end-0 m-3" id="successMessage" style="display: none; z-index: 1050;">
+    Stock updated successfully!
+</div>
+
+<div class="alert alert-danger position-fixed top-0 end-0 m-3" id="errorMessage" style="display: none; z-index: 1050;">
+    Error updating stock. Please try again.
+</div>
+
+<script>
+function updateStockInfo() {
+    const productSelect = document.getElementById('productSelect');
+    const stockInfo = document.getElementById('stockInfo');
+    const selectedProduct = document.getElementById('selectedProduct');
+    const currentStock = document.getElementById('currentStock');
+    const productPrice = document.getElementById('productPrice');
+    
+    if (productSelect.value) {
+        const productData = {
+            'laptop': { name: 'Laptop', stock: 5, price: '₹999.99' },
+            'mouse': { name: 'Mouse', stock: 50, price: '₹29.99' },
+            'keyboard': { name: 'Keyboard', stock: 25, price: '₹79.99' },
+            'monitor': { name: 'Monitor', stock: 0, price: '₹299.99' },
+            'desk-chair': { name: 'Desk Chair', stock: 15, price: '₹199.99' }
+        };
+        
+        const data = productData[productSelect.value];
+        selectedProduct.textContent = data.name;
+        currentStock.textContent = data.stock;
+        productPrice.textContent = data.price;
+        stockInfo.style.display = 'block';
+    } else {
+        stockInfo.style.display = 'none';
+    }
+}
+
+function handleStockUpdate(event) {
+    event.preventDefault();
+    
+    const product = document.getElementById('productSelect').value;
+    const quantity = document.getElementById('quantity').value;
+    const operation = document.querySelector('input[name="operation"]:checked').value;
+    const reason = document.getElementById('reason').value;
+    
+    if (!product || !quantity) {
+        showError('Please fill in all required fields');
+        return;
+    }
+    
+    showSuccess('Stock updated successfully!');
+    
+    setTimeout(() => {
+        resetForm();
+    }, 2000);
+}
+
+function resetForm() {
+    document.getElementById('stockUpdateForm').reset();
+    document.getElementById('stockInfo').style.display = 'none';
+    hideMessages();
+}
+
+function showSuccess(message) {
+    const successMessage = document.getElementById('successMessage');
+    successMessage.textContent = message;
+    successMessage.style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+    
+    setTimeout(() => {
+        successMessage.style.display = 'none';
+    }, 3000);
+}
+
+function showError(message) {
+    const errorMessage = document.getElementById('errorMessage');
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    document.getElementById('successMessage').style.display = 'none';
+    
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 3000);
+}
+
+function hideMessages() {
+    document.getElementById('successMessage').style.display = 'none';
+    document.getElementById('errorMessage').style.display = 'none';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends "employee/base.html" %}
+
+{% block title %}Transaction History - Smart Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <h1>Transaction History</h1>
+        <p>View all sales and stock transactions</p>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="search-filter-section">
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">Date Range</label>
+                <select class="form-select" id="dateFilter" onchange="filterTransactions()">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Transaction Type</label>
+                <select class="form-select" id="typeFilter" onchange="filterTransactions()">
+                    <option value="">All Types</option>
+                    <option value="sale">Sales</option>
+                    <option value="stock-in">Stock In</option>
+                    <option value="stock-out">Stock Out</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Product</label>
+                <select class="form-select" id="productFilter" onchange="filterTransactions()">
+                    <option value="">All Products</option>
+                    <option value="laptop">Laptop</option>
+                    <option value="mouse">Mouse</option>
+                    <option value="keyboard">Keyboard</option>
+                    <option value="monitor">Monitor</option>
+                    <option value="desk-chair">Desk Chair</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search transactions..." onkeyup="filterTransactions()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Statistics -->
+    <div class="summary-cards mb-4">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="totalSales">₹4,567.89</h3>
+                <p>Total Sales Today</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="totalTransactions">28</h3>
+                <p>Total Transactions</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="itemsSold">45</h3>
+                <p>Items Sold Today</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="avgSale">₹163.14</h3>
+                <p>Average Sale Amount</p>
+            </div>
+        </div>
+                <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="mt-4 text-center">
+            <a href="/employee-dashboard" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterTransactions() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            
+            const rows = document.querySelectorAll('#transactionTableBody tr');
+            
+            rows.forEach(row => {
+                let showRow = true;
+                
+                // Filter by date range
+                if (startDate || endDate) {
+                    const dateStr = row.cells[1].textContent;
+                    const date = new Date(dateStr);
+                    
+                    if (startDate && date < new Date(startDate)) {
+                        showRow = false;
+                    }
+                    
+                    if (endDate && date > new Date(endDate + ' 23:59:59')) {
+                        showRow = false;
+                    }
+                }
+                
+                // Filter by type
+                if (typeFilter) {
+                    const typeElement = row.cells[2].querySelector('.transaction-type');
+                    if (typeElement && !typeElement.classList.contains(typeFilter.replace('-', ''))) {
+                        showRow = false;
+                    }
+                }
+                
+                // Filter by search
+                if (searchValue) {
+                    const transactionId = row.cells[0].textContent.toLowerCase();
+                    const product = row.cells[3].textContent.toLowerCase();
+                    const user = row.cells[6].textContent.toLowerCase();
+                    
+                    if (!transactionId.includes(searchValue) && 
+                        !product.includes(searchValue) && 
+                        !user.includes(searchValue)) {
+                        showRow = false;
+                    }
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+        
+        function searchTransactions() {
+            filterTransactions();
+        }
+        
+        // Set today's date as default end date
+        document.getElementById('endDate').valueAsDate = new Date();
+        
+        // Set 30 days ago as default start date
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+        document.getElementById('startDate').valueAsDate = startDate;
+    </script>
+{% endblock %}

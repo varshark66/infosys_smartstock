@@ -1,0 +1,1136 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Smart Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="page-header">
+        <h1>Settings</h1>
+        <p>Configure your system preferences</p>
+    </div>
+
+    <div class="settings-layout">
+        <!-- Settings Navigation -->
+        <div class="settings-nav">
+            <button class="nav-item active" data-tab="shop">
+                <i class="fas fa-store"></i>
+                <span>Shop Details</span>
+            </button>
+            <button class="nav-item" data-tab="profile">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </button>
+            <button class="nav-item" data-tab="alerts">
+                <i class="fas fa-bell"></i>
+                <span>Alerts</span>
+            </button>
+            <button class="nav-item" data-tab="system">
+                <i class="fas fa-cog"></i>
+                <span>System</span>
+            </button>
+            <button class="nav-item" data-tab="backup">
+                <i class="fas fa-database"></i>
+                <span>Backup</span>
+            </button>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-content">
+            <!-- Shop Details Tab -->
+            <div class="tab-content active" id="shop-tab">
+                <div class="settings-section">
+                    <h3>Shop Information</h3>
+                    <form id="shopForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="shopName">Shop Name</label>
+                                <input type="text" class="form-control" id="shopName" value="Smart Inventory Store">
+                            </div>
+                            <div class="form-group">
+                                <label for="shopOwnerName">Shop Owner Name</label>
+                                <input type="text" class="form-control" id="shopOwnerName" value="John Doe">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="shopEmail">Email</label>
+                                <input type="email" class="form-control" id="shopEmail" value="info@smartstock.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="shopPhone">Phone Number</label>
+                                <input type="tel" class="form-control" id="shopPhone" value="+1 234 567 8900">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="gstin">GSTIN</label>
+                                <input type="text" class="form-control" id="gstin" value="GSTIN1234567890">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="shopAddress">Shop Address</label>
+                            <textarea class="form-control" id="shopAddress" rows="3">123 Main Street, City, State 123456</textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="city">City</label>
+                                <input type="text" class="form-control" id="city" value="New York">
+                            </div>
+                            <div class="form-group">
+                                <label for="state">State</label>
+                                <input type="text" class="form-control" id="state" value="NY">
+                            </div>
+                            <div class="form-group">
+                                <label for="pincode">Pincode</label>
+                                <input type="text" class="form-control" id="pincode" value="123456">
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Shop Details</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div class="tab-content" id="profile-tab">
+                <div class="settings-section">
+                    <h3>Profile Picture</h3>
+                    <div class="profile-image-section">
+                        <div class="current-profile-image">
+                            <img id="currentProfileImage" src="https://picsum.photos/seed/admin/150/150.jpg" alt="Profile Picture" class="profile-img">
+                            <div class="image-overlay">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('profileImageInput').click()">
+                                    <i class="fas fa-camera"></i> Change Photo
+                                </button>
+                            </div>
+                        </div>
+                        <input type="file" id="profileImageInput" accept="image/*" style="display: none;" onchange="previewProfileImage(event)">
+                        <div class="image-info">
+                            <p class="text-muted">Upload a profile picture (JPG, PNG, GIF)</p>
+                            <p class="text-small">Maximum file size: 2MB</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Personal Information</h3>
+                    <form id="profileForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fullName">Full Name</label>
+                                <input type="text" class="form-control" id="fullName" value="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" class="form-control" id="username" value="admin" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" value="admin@smartstock.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="tel" class="form-control" id="phone" value="+1 234 567 8900">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="role">Role</label>
+                                <select class="form-control" id="role">
+                                    <option value="admin">Administrator</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="staff">Staff</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="department">Department</label>
+                                <select class="form-control" id="department">
+                                    <option value="inventory">Inventory Management</option>
+                                    <option value="sales">Sales</option>
+                                    <option value="purchasing">Purchasing</option>
+                                    <option value="management">Management</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Admin Details</h3>
+                    <form id="adminForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="adminId">Admin ID</label>
+                                <input type="text" class="form-control" id="adminId" value="ADM001" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="accessLevel">Access Level</label>
+                                <select class="form-control" id="accessLevel">
+                                    <option value="full">Full Access</option>
+                                    <option value="limited">Limited Access</option>
+                                    <option value="readonly">Read Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="joinDate">Join Date</label>
+                                <input type="date" class="form-control" id="joinDate" value="2024-01-15">
+                            </div>
+                            <div class="form-group">
+                                <label for="lastLogin">Last Login</label>
+                                <input type="text" class="form-control" id="lastLogin" value="2026-02-28 11:30 PM" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="permissions">Permissions</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" checked> Manage Products
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" checked> Manage Inventory
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" checked> View Reports
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox"> Manage Users
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox"> System Settings
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Update Admin Details</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Change Password</h3>
+                    <form id="passwordForm">
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Change Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alerts Tab -->
+            <div class="tab-content" id="alerts-tab">
+                <div class="settings-section">
+                    <h3>Alert Preferences</h3>
+                    <form id="alertsForm">
+                        <div class="alert-settings">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Low Stock Alerts</h4>
+                                    <p>Get notified when products are running low on stock</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="switch">
+                                        <input type="checkbox" id="lowStockAlerts" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Out of Stock Alerts</h4>
+                                    <p>Immediate notifications when products go out of stock</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="switch">
+                                        <input type="checkbox" id="outOfStockAlerts" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Sales Alerts</h4>
+                                    <p>Notifications for new sales and transactions</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="switch">
+                                        <input type="checkbox" id="salesAlerts">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Email Notifications</h4>
+                                    <p>Receive alert summaries via email</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="switch">
+                                        <input type="checkbox" id="emailNotifications" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Alert Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- System Tab -->
+            <div class="tab-content" id="system-tab">
+                <div class="settings-section">
+                    <h3>System Preferences</h3>
+                    <form id="systemForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="currency">Default Currency</label>
+                                <select class="form-select" id="currency">
+                                    <option value="INR" selected>INR (₹)</option>
+                                    <option value="USD">USD ($)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="GBP">GBP (£)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="timezone">Timezone</label>
+                                <select class="form-select" id="timezone">
+                                    <option value="UTC" selected>UTC</option>
+                                    <option value="EST">EST</option>
+                                    <option value="PST">PST</option>
+                                    <option value="IST">IST</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dateFormat">Date Format</label>
+                                <select class="form-select" id="dateFormat">
+                                    <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
+                                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="language">Language</label>
+                                <select class="form-select" id="language">
+                                    <option value="en" selected>English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save System Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Backup Tab -->
+            <div class="tab-content" id="backup-tab">
+                <div class="settings-section">
+                    <h3>Backup & Restore</h3>
+                    <div class="backup-options">
+                        <div class="backup-card">
+                            <div class="backup-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="backup-info">
+                                <h4>Download Backup</h4>
+                                <p>Download a complete backup of your inventory data</p>
+                                <button class="btn btn-primary" onclick="downloadBackup()">
+                                    <i class="fas fa-download"></i> Download Backup
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="backup-card">
+                            <div class="backup-icon">
+                                <i class="fas fa-upload"></i>
+                            </div>
+                            <div class="backup-info">
+                                <h4>Restore Backup</h4>
+                                <p>Restore your inventory data from a backup file</p>
+                                <input type="file" id="backupFile" accept=".json,.sql" style="display: none;">
+                                <button class="btn btn-outline-primary" onclick="document.getElementById('backupFile').click()">
+                                    <i class="fas fa-upload"></i> Choose File
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Automatic Backup</h3>
+                    <div class="backup-settings">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Enable Automatic Backup</h4>
+                                <p>Automatically backup your data daily</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="switch">
+                                    <input type="checkbox" id="autoBackup">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Backup Frequency</h4>
+                                <p>How often to create automatic backups</p>
+                            </div>
+                            <div class="setting-control">
+                                <select class="form-select" id="backupFrequency">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Tab navigation
+document.querySelectorAll('.nav-item').forEach(button => {
+    button.addEventListener('click', function() {
+        const tabName = this.dataset.tab;
+        
+        // Update active states
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        this.classList.add('active');
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+    });
+});
+
+// Form submissions
+document.getElementById('shopForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    showAlert('Shop details saved successfully', 'success');
+});
+
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    showAlert('Profile updated successfully', 'success');
+});
+
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        showAlert('Passwords do not match', 'danger');
+        return;
+    }
+    
+    showAlert('Password changed successfully', 'success');
+    this.reset();
+});
+
+document.getElementById('alertsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    showAlert('Alert preferences saved successfully', 'success');
+});
+
+document.getElementById('systemForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    showAlert('System settings saved successfully', 'success');
+});
+
+// Backup functions
+function downloadBackup() {
+    // Create sample backup data
+    const backupData = {
+        version: '1.0',
+        date: new Date().toISOString(),
+        data: {
+            products: [],
+            sales: [],
+            users: [],
+            settings: {}
+        }
+    };
+    
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `smartstock_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showAlert('Backup downloaded successfully', 'success');
+}
+
+document.getElementById('backupFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        showAlert(`Backup file "${file.name}" selected. Restore functionality would be implemented here.`, 'info');
+    }
+});
+
+// Auto backup toggle
+document.getElementById('autoBackup').addEventListener('change', function() {
+    const frequency = document.getElementById('backupFrequency').parentElement.parentElement;
+    frequency.style.display = this.checked ? 'flex' : 'none';
+});
+
+// Utility function
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.settings-container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial auto backup frequency visibility
+    const autoBackup = document.getElementById('autoBackup');
+    const frequency = document.getElementById('backupFrequency').parentElement.parentElement;
+    frequency.style.display = autoBackup.checked ? 'flex' : 'none';
+});
+</script>
+
+<style>
+.settings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.settings-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.settings-nav {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    padding: 1rem 0;
+    height: fit-content;
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.nav-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: translateX(3px);
+}
+
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+    color: white;
+    border-left-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.6) 100%);
+    border-radius: 0 3px 3px 0;
+}
+
+.nav-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.nav-item.active i {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.nav-item span {
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+}
+
+.settings-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    padding: 2rem;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.settings-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.settings-section h3 {
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.alert-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.setting-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: #333;
+    font-size: 1rem;
+}
+
+.setting-info p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #4A90E2;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Backup Styles */
+.backup-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.backup-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.backup-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.backup-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.backup-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.backup-info p {
+    margin: 0 0 1rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.backup-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Profile Image Styles */
+.profile-image-section {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.current-profile-image {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #007bff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.current-profile-image:hover .image-overlay {
+    opacity: 1;
+}
+
+.current-profile-image:hover .profile-img {
+    transform: scale(1.05);
+}
+
+.image-info {
+    flex: 1;
+}
+
+.image-info p {
+    margin: 0 0 0.5rem 0;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.text-small {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+/* Checkbox Styles */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .settings-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .settings-nav {
+        display: flex;
+        overflow-x: auto;
+        padding: 0.5rem;
+    }
+    
+    .nav-item {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .backup-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .profile-image-section {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+}
+</style>
+
+<script>
+// Profile Image Upload Function
+function previewProfileImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // Check file size (2MB limit)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File size must be less than 2MB');
+            event.target.value = '';
+            return;
+        }
+        
+        // Check file type
+        if (!file.type.match('image.*')) {
+            alert('Please select an image file (JPG, PNG, GIF)');
+            event.target.value = '';
+            return;
+        }
+        
+        // Preview the image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('currentProfileImage').src = e.target.result;
+            
+            // Show success message
+            showNotification('Profile image updated successfully!', 'success');
+            
+            // Here you would typically upload the image to server
+            uploadProfileImage(file);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Upload profile image to server
+function uploadProfileImage(file) {
+    const formData = new FormData();
+    formData.append('profileImage', file);
+    
+    fetch('/api/upload-profile-image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Profile image uploaded successfully');
+            // Update user profile image in header if needed
+            updateUserHeaderImage(data.imageUrl);
+        } else {
+            showNotification('Failed to upload profile image', 'error');
+        }
+    })
+    .catch(error => {
+        console.log('Demo: Profile image upload simulated');
+        // Demo functionality - just show success
+        showNotification('Profile image updated (demo mode)', 'success');
+    });
+}
+
+// Update user header image
+function updateUserHeaderImage(imageUrl) {
+    const userIcon = document.querySelector('.user-dropdown i.fa-user-circle');
+    if (userIcon && imageUrl) {
+        // Replace icon with image
+        userIcon.outerHTML = `<img src="${imageUrl}" alt="User" class="user-avatar">`;
+        
+        // Add CSS for user avatar
+        if (!document.querySelector('#userAvatarStyles')) {
+            const style = document.createElement('style');
+            style.id = 'userAvatarStyles';
+            style.textContent = `
+                .user-avatar {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    border: 2px solid rgba(255,255,255,0.3);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+}
+
+// Show notification function
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show`;
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Initialize settings functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const navItems = document.querySelectorAll('.nav-item[data-tab]');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all nav items and tabs
+            navItems.forEach(nav => nav.classList.remove('active'));
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            
+            // Add active class to clicked nav item and corresponding tab
+            this.classList.add('active');
+            const targetTabContent = document.getElementById(targetTab + '-tab');
+            if (targetTabContent) {
+                targetTabContent.classList.add('active');
+            }
+        });
+    });
+    
+    // Add click handler to profile image overlay
+    const overlay = document.querySelector('.image-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            document.getElementById('profileImageInput').click();
+        });
+    }
+    
+    // Handle profile form submission
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showNotification('Profile updated successfully!', 'success');
+        });
+    }
+    
+    // Handle admin form submission
+    const adminForm = document.getElementById('adminForm');
+    if (adminForm) {
+        adminForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showNotification('Admin details updated successfully!', 'success');
+        });
+    }
+    
+    // Handle password form submission
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showNotification('Password changed successfully!', 'success');
+            // Clear password fields
+            passwordForm.reset();
+        });
+    }
+    
+    // Log that settings functionality is ready
+    console.log('Settings page loaded with all functionality');
+});
+</script>
+{% endblock %}

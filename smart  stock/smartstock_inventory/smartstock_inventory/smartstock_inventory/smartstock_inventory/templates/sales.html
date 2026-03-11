@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+
+{% block title %}Sales - Smart Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="sales-container">
+    <div class="page-header">
+        <h1>Sales & Transactions</h1>
+        <p>Record and manage sales transactions</p>
+    </div>
+
+    <!-- Sales Summary -->
+    <div class="sales-summary">
+        <div class="summary-card">
+            <div class="summary-icon green">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="summary-content">
+                <h3 id="today-revenue">₹0</h3>
+                <p>Today's Revenue</p>
+            </div>
+        </div>
+        
+        <div class="summary-card">
+            <div class="summary-icon blue">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="summary-content">
+                <h3 id="today-transactions">0</h3>
+                <p>Today's Transactions</p>
+            </div>
+        </div>
+        
+        <div class="summary-card">
+            <div class="summary-icon purple">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="summary-content">
+                <h3 id="avg-sale">₹0</h3>
+                <p>Average Sale</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="sales-content">
+        <!-- Record Sale Form -->
+        <div class="sale-form-section">
+            <div class="section-header">
+                <h3>Record Sale</h3>
+            </div>
+            <form id="saleForm" class="sale-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productSelect">Product</label>
+                        <select class="form-select" id="productSelect" required>
+                            <option value="">Select Product</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="saleQuantity">Quantity</label>
+                        <input type="number" class="form-control" id="saleQuantity" min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unitPrice">Unit Price</label>
+                        <input type="number" class="form-control" id="unitPrice" step="0.01" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customerName">Customer Name</label>
+                        <input type="text" class="form-control" id="customerName" placeholder="Optional">
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentMethod">Payment Method</label>
+                        <select class="form-select" id="paymentMethod" required>
+                            <option value="">Select Payment</option>
+                            <option value="cash">Cash</option>
+                            <option value="card">Card</option>
+                            <option value="upi">UPI</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalAmount">Total Amount</label>
+                        <input type="number" class="form-control" id="totalAmount" step="0.01" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetSaleForm()">Clear</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Record Sale
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="transactions-section">
+            <div class="section-header">
+                <h3>Transaction History</h3>
+                <div class="filter-controls">
+                    <input type="date" class="form-control" id="dateFilter">
+                    <select class="form-select" id="paymentFilter">
+                        <option value="">All Payment Methods</option>
+                        <option value="cash">Cash</option>
+                        <option value="card">Card</option>
+                        <option value="upi">UPI</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="transactions-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                            <th>Customer</th>
+                            <th>Payment</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody">
+                        <!-- Transactions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let products = [];
+let sales = [];
+
+// Load data
+async function loadSalesData() {
+    await Promise.all([
+        loadProducts(),
+        loadSales()
+    ]);
+    updateSalesSummary();
+}
+
+// Load products for dropdown
+async function loadProducts() {
+    try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        products = data.products;
+        
+        const productSelect = document.getElementById('productSelect');
+        productSelect.innerHTML = '<option value="">Select Product</option>';
+        
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product._id;
+            option.textContent = `${product.name} (Stock: ${product.stock_quantity})`;
+            option.dataset.price = product.price;
+            option.dataset.name = product.name;
+            option.dataset.stock = product.stock_quantity;
+            productSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading products:', error);
+    }
+}
+
+// Load sales transactions
+async function loadSales() {
+    try {
+        const response = await fetch('/api/sales');
+        const data = await response.json();
+        sales = data.sales;
+        displayTransactions(sales);
+    } catch (error) {
+        console.error('Error loading sales:', error);
+    }
+}
+
+// Display transactions
+function displayTransactions(transactionsToDisplay) {
+    const tbody = document.getElementById('transactionsTableBody');
+    tbody.innerHTML = '';
+    
+    transactionsToDisplay.forEach(sale => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${formatDate(sale.date)}</td>
+            <td>${sale.time}</td>
+            <td>${sale.product_name}</td>
+            <td>${sale.quantity}</td>
+            <td>₹${sale.unit_price.toFixed(2)}</td>
+            <td><strong>₹${sale.total_amount.toFixed(2)}</strong></td>
+            <td>${sale.customer_name || '-'}</td>
+            <td><span class="payment-badge ${sale.payment_method}">${sale.payment_method.toUpperCase()}</span></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Update sales summary
+function updateSalesSummary() {
+    const today = new Date().toISOString().split('T')[0];
+    const todaySales = sales.filter(sale => sale.date === today);
+    
+    const totalRevenue = todaySales.reduce((sum, sale) => sum + sale.total_amount, 0);
+    const transactionCount = todaySales.length;
+    const avgSale = transactionCount > 0 ? totalRevenue / transactionCount : 0;
+    
+    document.getElementById('today-revenue').textContent = formatCurrency(totalRevenue);
+    document.getElementById('today-transactions').textContent = transactionCount;
+    document.getElementById('avg-sale').textContent = formatCurrency(avgSale);
+}
+
+// Product selection change
+document.getElementById('productSelect').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const price = parseFloat(selectedOption.dataset.price) || 0;
+    const stock = parseInt(selectedOption.dataset.stock) || 0;
+    
+    document.getElementById('unitPrice').value = price.toFixed(2);
+    document.getElementById('saleQuantity').max = stock;
+    calculateTotal();
+});
+
+// Quantity change
+document.getElementById('saleQuantity').addEventListener('input', calculateTotal);
+
+function calculateTotal() {
+    const quantity = parseInt(document.getElementById('saleQuantity').value) || 0;
+    const unitPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
+    const total = quantity * unitPrice;
+    
+    document.getElementById('totalAmount').value = total.toFixed(2);
+}
+
+// Submit sale form
+document.getElementById('saleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const productId = document.getElementById('productSelect').value;
+    const productOption = document.getElementById('productSelect').options[document.getElementById('productSelect').selectedIndex];
+    const quantity = parseInt(document.getElementById('saleQuantity').value);
+    const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+    const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+    const customerName = document.getElementById('customerName').value;
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    
+    // Check stock availability
+    const availableStock = parseInt(productOption.dataset.stock);
+    if (quantity > availableStock) {
+        showAlert('Insufficient stock available', 'danger');
+        return;
+    }
+    
+    const saleData = {
+        product_id: productId,
+        product_name: productOption.dataset.name,
+        quantity: quantity,
+        unit_price: unitPrice,
+        total_amount: totalAmount,
+        customer_name: customerName,
+        payment_method: paymentMethod
+    };
+    
+    try {
+        const response = await fetch('/api/sales', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(saleData)
+        });
+        
+        if (response.ok) {
+            showAlert('Sale recorded successfully', 'success');
+            resetSaleForm();
+            await loadSalesData();
+        } else {
+            showAlert('Error recording sale', 'danger');
+        }
+    } catch (error) {
+        console.error('Error recording sale:', error);
+        showAlert('Error recording sale', 'danger');
+    }
+});
+
+// Reset form
+function resetSaleForm() {
+    document.getElementById('saleForm').reset();
+    document.getElementById('unitPrice').value = '';
+    document.getElementById('totalAmount').value = '';
+}
+
+// Filter transactions
+document.getElementById('dateFilter').addEventListener('change', filterTransactions);
+document.getElementById('paymentFilter').addEventListener('change', filterTransactions);
+
+function filterTransactions() {
+    const dateFilter = document.getElementById('dateFilter').value;
+    const paymentFilter = document.getElementById('paymentFilter').value;
+    
+    let filteredSales = sales;
+    
+    if (dateFilter) {
+        filteredSales = filteredSales.filter(sale => sale.date === dateFilter);
+    }
+    
+    if (paymentFilter) {
+        filteredSales = filteredSales.filter(sale => sale.payment_method === paymentFilter);
+    }
+    
+    displayTransactions(filteredSales);
+}
+
+// Utility functions
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR'
+    }).format(amount);
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.sales-container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadSalesData();
+    
+    // Set today's date as default filter
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateFilter').value = today;
+});
+</script>
+
+<style>
+.sales-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.sales-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.summary-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.summary-icon.green {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.summary-icon.blue {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.summary-icon.purple {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+.summary-content h3 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.summary-content p {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.sales-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.sale-form-section, .transactions-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-controls .form-control, .filter-controls .form-select {
+    width: auto;
+}
+
+.sale-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.transactions-table {
+    overflow-x: auto;
+}
+
+.transactions-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.transactions-table th {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    font-size: 0.9rem;
+}
+
+.transactions-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.transactions-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.payment-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.payment-badge.cash {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.payment-badge.card {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.payment-badge.upi {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.payment-badge.other {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+@media (max-width: 768px) {
+    .sales-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .sale-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-controls {
+        flex-direction: column;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}

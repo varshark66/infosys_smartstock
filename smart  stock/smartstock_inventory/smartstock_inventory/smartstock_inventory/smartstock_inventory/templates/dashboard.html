@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Smart Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <p class="welcome-text">Welcome to Smart stock Inventory Retail Management System</p>
+        <p class="greeting-text">Hello nice to see you,</p>
+        <p class="greeting-text">"Don’t lower your price. Add value."</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-products">0</h3>
+                <p>Total Products</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="fas fa-warehouse"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-stock">0</h3>
+                <p>Total Stock Quantity</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="low-stock-items">0</h3>
+                <p>Low Stock Items</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="today-sales">0</h3>
+                <p>Today's Sales</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon red">
+                <i class="fas fa-receipt"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-transactions">0</h3>
+                <p>Total Transactions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Sales Overview</h3>
+                <select class="form-select form-select-sm" style="width: auto;">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                    <option>Last 3 months</option>
+                </select>
+            </div>
+            <canvas id="salesChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Inventory Status</h3>
+            </div>
+            <canvas id="inventoryChart"></canvas>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Top Selling Products</h3>
+            </div>
+            <canvas id="topProductsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    <div class="alerts-section">
+        <div class="alerts-panel">
+            <div class="panel-header">
+                <h3>Low Stock Warnings</h3>
+                <a href="/alerts" class="view-all">View All</a>
+            </div>
+            <div class="alerts-list" id="lowStockList"></div>
+        </div>
+
+        <div class="notification-panel">
+            <div class="panel-header">
+                <h3>Recent Notifications</h3>
+            </div>
+            <div class="notifications-list" id="notificationsList"></div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <button class="action-btn" onclick="window.location.href='/products'">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add Product</span>
+            </button>
+            <button class="action-btn" onclick="window.location.href='/sales'">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Record Sale</span>
+            </button>
+            <button class="action-btn" onclick="window.location.href='/reports'">
+                <i class="fas fa-file-alt"></i>
+                <span>Generate Report</span>
+            </button>
+            <button class="action-btn" onclick="window.location.href='/alerts'">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>View Low Stock</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load dashboard statistics
+async function loadDashboardStats() {
+    try {
+        const response = await fetch('/api/dashboard/stats');
+        const data = await response.json();
+        
+        document.getElementById('total-products').textContent = data.total_products;
+        document.getElementById('total-stock').textContent = data.total_stock;
+        document.getElementById('low-stock-items').textContent = data.low_stock_items;
+        document.getElementById('today-sales').textContent = data.today_sales;
+        document.getElementById('total-transactions').textContent = data.total_transactions;
+    } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+    }
+}
+
+// Initialize charts
+let selectedRange = 7;
+
+async function initCharts() {
+
+    try {
+
+        const response = await fetch(`/api/dashboard/data?range=${selectedRange}`)
+        const data = await response.json()
+
+        console.log("Dashboard data:", data)
+
+        // SALES CHART
+        const salesCtx = document.getElementById('salesChart').getContext('2d')
+
+        new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(data.sales_overview || {}),
+                datasets: [{
+                    label: 'Sales',
+                    data: Object.values(data.sales_overview || {}),
+                    borderColor: '#4A90E2',
+                    backgroundColor: 'rgba(74,144,226,0.2)',
+                    tension: 0.4
+                }]
+            }
+        })
+
+        // INVENTORY CHART
+        const inventoryCtx = document.getElementById('inventoryChart')
+
+        new Chart(inventoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['In Stock','Low Stock','Out of Stock'],
+                datasets: [{
+                    data: [
+                        data.inventory_status?.in_stock || 0,
+                        data.inventory_status?.low_stock || 0,
+                        data.inventory_status?.out_stock || 0
+                    ],
+                    backgroundColor: ['#27AE60','#F39C12','#E74C3C']
+                }]
+            }
+        })
+
+        // TOP PRODUCTS CHART
+        const topCtx = document.getElementById('topProductsChart')
+
+        const labels = (data.top_products || []).map(p => p._id)
+        const values = (data.top_products || []).map(p => p.total_sold)
+
+        new Chart(topCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Units Sold',
+                    data: values,
+                    backgroundColor: '#4A90E2'
+                }]
+            }
+        })
+
+    } catch(err) {
+
+        console.error("Dashboard chart error:", err)
+
+    }
+
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardStats();
+    initCharts();
+    loadDashboardAlerts();
+});
+
+document.querySelectorAll(".dropdown-item").forEach(item => {
+
+    item.addEventListener("click", function(){
+
+        const text = this.innerText
+
+        if(text.includes("7")){
+            selectedRange = 7
+        }
+        else if(text.includes("30")){
+            selectedRange = 30
+        }
+        else{
+            selectedRange = 90
+        }
+
+        initCharts()
+
+    })
+
+})
+
+async function loadDashboardAlerts(){
+
+    const response = await fetch('/api/dashboard/alerts')
+    const data = await response.json()
+
+    const lowStockContainer = document.getElementById("lowStockList")
+    const notificationsContainer = document.getElementById("notificationsList")
+
+    lowStockContainer.innerHTML = ""
+    notificationsContainer.innerHTML = ""
+
+    // LOW STOCK PRODUCTS
+    data.low_stock.forEach(product => {
+
+        lowStockContainer.innerHTML += `
+        <div class="warning-item">
+            <strong>${product.name}</strong>
+            <p>Stock level: ${product.stock} (Min: ${product.min_stock})</p>
+        </div>
+        `
+    })
+
+    // NOTIFICATIONS
+    data.notifications.forEach(note => {
+
+        notificationsContainer.innerHTML += `
+        <div class="notification-item">
+            <strong>${note.title}</strong>
+            <p>${note.message}</p>
+        </div>
+        `
+    })
+
+}
+
+</script>
+{% endblock %}
